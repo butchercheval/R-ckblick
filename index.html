@@ -522,31 +522,51 @@
     
     showStep('step-end');
 
-    // === PARSING AN GOOGLE FORMS ===
-    // URLSearchParams verpackt die Daten exakt so, wie Google Forms es verlangt
-    const searchParams = new URLSearchParams();
-    searchParams.append(QUIZ_CONFIG.googleForm.entryName, spielerName);
-    searchParams.append(QUIZ_CONFIG.googleForm.entryThema, QUIZ_CONFIG.themaID);
-    searchParams.append(QUIZ_CONFIG.googleForm.entryErgebnis, `Punkte: ${erreichtePunkte}/${maxPunkte} -> Note: ${note}`);
-    searchParams.append(QUIZ_CONFIG.googleForm.entryDetails, detailBericht);
+// === PARSING AN GOOGLE FORMS (IFRAME-TRICK GEGEN BROWSER-BLOCKADEN) ===
+    // Wir erstellen ein unsichtbares Iframe und Formular, um Safari/iPad-Sperren zu umgehen.
+    
+    // 1. Unsichtbares Hilfs-Fenster (Iframe) erstellen, damit die Seite nicht neu lädt
+    let iframe = document.getElementById('hidden_iframe');
+    if(!iframe) {
+        iframe = document.createElement('iframe');
+        iframe.id = 'hidden_iframe';
+        iframe.name = 'hidden_iframe';
+        iframe.style.display = 'none';
+        document.body.appendChild(iframe);
+    }
 
-    fetch(QUIZ_CONFIG.googleForm.url, {
-        method: "POST",
-        mode: "no-cors", // Verhindert Sicherheitsblockaden im Browser
-        headers: {
-            "Content-Type": "application/x-www-form-urlencoded"
-        },
-        body: searchParams
-    }).then(() => {
+    // 2. Unsichtbares Formular erstellen
+    const form = document.createElement('form');
+    form.action = QUIZ_CONFIG.googleForm.url;
+    form.method = 'POST';
+    form.target = 'hidden_iframe'; // Schickt die Daten unbemerkt in das Iframe
+
+    // Hilfsfunktion zum Erzeugen der unsichtbaren Datenfelder
+    function addInput(name, value) {
+        const input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = name;
+        input.value = value;
+        form.appendChild(input);
+    }
+
+    // 3. Die echten Datenfelder befüllen
+    addInput(QUIZ_CONFIG.googleForm.entryName, spielerName);
+    addInput(QUIZ_CONFIG.googleForm.entryThema, QUIZ_CONFIG.themaID);
+    addInput(QUIZ_CONFIG.googleForm.entryErgebnis, `Punkte: ${erreichtePunkte}/${maxPunkte} -> Note: ${note}`);
+    addInput(QUIZ_CONFIG.googleForm.entryDetails, detailBericht);
+
+    // 4. Formular kurz einhängen, absenden und direkt wieder löschen
+    document.body.appendChild(form);
+    form.submit();
+    
+    // Kurze Verzögerung für den Versand, dann die Schüler-Ergebnisse einblenden
+    setTimeout(() => {
+        document.body.removeChild(form);
         document.getElementById('loading').style.display = 'none'; 
         document.getElementById('resultView').style.display = 'block'; 
-    }).catch(err => {
-        console.error(err);
-        document.getElementById('loading').style.display = 'none'; 
-        document.getElementById('resultView').style.display = 'block'; 
-    });
+    }, 600);
   }
-
   // --- HILFSFUNKTIONEN (TIMER, JOKER, BASE-UI) ---
   function updateMood(v) { moodRating = v; const vis = document.getElementById('visualFeedback'); let s = 0.5 + (v/100)*2; vis.style.transform = `scale(${s})`; vis.innerText = v < 20 ? "🕯️" : (v > 80 ? "🔥🔥" : "🔥"); }
   function rateKnowledge(n, el) { knowledgeRating = n; Array.from(document.getElementById('knowledgeContainer').children).forEach(c => { c.className = 'smiley-wrapper dimmed'; }); el.className = 'smiley-wrapper selected'; const btn = document.getElementById('btn-ready'); btn.disabled = false; btn.classList.add('active-btn'); }
