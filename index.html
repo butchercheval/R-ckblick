@@ -523,16 +523,20 @@
     showStep('step-end');
 
     // === PARSING AN GOOGLE FORMS ===
-    const formData = new FormData();
-    formData.append(QUIZ_CONFIG.googleForm.entryName, spielerName);
-    formData.append(QUIZ_CONFIG.googleForm.entryThema, QUIZ_CONFIG.themaID);
-    formData.append(QUIZ_CONFIG.googleForm.entryErgebnis, `Punkte: ${erreichtePunkte}/${maxPunkte} -> Note: ${note}`);
-    formData.append(QUIZ_CONFIG.googleForm.entryDetails, detailBericht);
+    // URLSearchParams verpackt die Daten exakt so, wie Google Forms es verlangt
+    const searchParams = new URLSearchParams();
+    searchParams.append(QUIZ_CONFIG.googleForm.entryName, spielerName);
+    searchParams.append(QUIZ_CONFIG.googleForm.entryThema, QUIZ_CONFIG.themaID);
+    searchParams.append(QUIZ_CONFIG.googleForm.entryErgebnis, `Punkte: ${erreichtePunkte}/${maxPunkte} -> Note: ${note}`);
+    searchParams.append(QUIZ_CONFIG.googleForm.entryDetails, detailBericht);
 
     fetch(QUIZ_CONFIG.googleForm.url, {
         method: "POST",
-        mode: "no-cors",
-        body: formData
+        mode: "no-cors", // Verhindert Sicherheitsblockaden im Browser
+        headers: {
+            "Content-Type": "application/x-www-form-urlencoded"
+        },
+        body: searchParams
     }).then(() => {
         document.getElementById('loading').style.display = 'none'; 
         document.getElementById('resultView').style.display = 'block'; 
