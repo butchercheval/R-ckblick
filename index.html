@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Wochenrückblick - Universal Edition</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Bangers&family=Roboto:wght@400;700;900&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@700&display=swap');
+
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  
+  body { 
+    margin: 0; padding: 0; 
+    font-family: 'Roboto', sans-serif; 
+    background-color: #ffc107; 
+    background-image: repeating-linear-gradient(45deg, #ffca28 25%, transparent 25%, transparent 75%, #ffca28 75%, #ffca28), repeating-linear-gradient(45deg, #ffca28 25%, #ffc107 25%, #ffc107 75%, #ffca28 75%, #ffca28);
+    background-size: 20px 20px;
+    overflow-x: hidden;
+    min-height: 100vh;
+    transition: background 0.5s;
+  }
+
+  .container { 
+    max-width: 820px; 
+    margin: 0 auto; 
+    padding: 20px; 
+    min-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    position: relative;
+  }
+
+  .step { display: none; animation: fadeIn 0.4s ease-out; }
+  .step.active { display: block; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+  .container-card {
+    background: white; 
+    border: 5px solid black; 
+    box-shadow: 12px 12px 0px black; 
+    transform: rotate(-1deg); 
+    padding: 35px;
+    position: relative;
+    margin-bottom: 20px;
+  }
+
+  h1, h2, .big-text {
+    font-family: 'Bangers', cursive; 
+    color: #d32f2f; 
+    text-shadow: 3px 3px 0px black; 
+    text-transform: uppercase; 
+    letter-spacing: 2px;
+    font-size: 3.2em; 
+    transform: rotate(-2deg); 
+    display: block;
+    margin-bottom: 20px;
+    text-align: center;
+  }
+
+  #timer-box {
+    position: fixed;
+    top: 15px;
+    right: 15px;
+    background: white;
+    border: 4px solid black;
+    box-shadow: 5px 5px 0 black;
+    font-family: 'Bangers', cursive;
+    font-size: 2.2em;
+    padding: 5px 15px;
+    transform: rotate(2deg);
+    z-index: 1000;
+    display: none;
+    color: #333;
+    letter-spacing: 2px;
+  }
+
+  .timer-warning {
+    animation: comic-pulse 0.5s infinite alternate !important;
+    background: #ff0055 !important;
+    color: white !important;
+    transform: rotate(-3deg) scale(1.1) !important;
+  }
+
+  #joker-container {
+    position: fixed;
+    top: 15px;
+    left: 15px;
+    z-index: 1000;
+    display: none;
+    gap: 10px;
+  }
+
+  #joker-box, #swear-box {
+    background: white;
+    border: 4px solid black;
+    box-shadow: 5px 5px 0 black;
+    font-size: 1.8em;
+    padding: 5px 10px;
+    transform: rotate(-2deg);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-family: 'Bangers', cursive;
+  }
+
+  #swear-box { transform: rotate(1deg); }
+  
+  .joker-active-pulse { animation: joker-pulse 1s infinite; border-color: #ff00cc !important; background: #ffeb3b !important; }
+  .swear-active-pulse { animation: swear-pulse 1s infinite; border-color: #ff9800 !important; background: #ffeb3b !important; }
+  
+  @keyframes joker-pulse { 0% { transform: rotate(-2deg) scale(1); } 50% { transform: rotate(-2deg) scale(1.1); } 100% { transform: rotate(-2deg) scale(1); } }
+  @keyframes swear-pulse { 0% { transform: rotate(1deg) scale(1); } 50% { transform: rotate(1deg) scale(1.1); } 100% { transform: rotate(1deg) scale(1); } }
+
+  body.mode-intro { background: radial-gradient(circle, #ff00cc, #333399); }
+  .intro-title { font-family: 'Bangers', cursive; font-size: 4em; text-transform: uppercase; text-shadow: 5px 5px 0 #000; margin-bottom: 40px; letter-spacing: 2px; color: white; text-align: center; }
+  .lower-third { background: linear-gradient(90deg, rgba(0,0,0,0) 0%, rgba(255,255,255,0.9) 15%, rgba(255,255,255,0.9) 85%, rgba(0,0,0,0) 100%); padding: 20px 50px; margin: 20px 0; transform: skewX(-10deg); position: relative; }
+  .lower-third-content { transform: skewX(10deg); }
+  .name-select { width: 100%; padding: 15px; font-size: 1.5em; font-weight: bold; border: 3px solid #333399; border-radius: 8px; background: white; text-align: center; }
+
+  .nav-btn {
+    width: 100%; padding: 20px; font-size: 2.2em; border: 4px solid black; margin-top: 20px; margin-bottom: 10px;
+    font-family: 'Bangers', cursive; box-shadow: 10px 10px 0px black; transform: rotate(-1deg); color: #7f8c8d; background-color: #bdc3c7;
+  }
+  .nav-btn.active-btn { cursor: pointer; background-color: #2ecc71; color: white; text-shadow: 2px 2px 0 black; animation: comic-pulse 1.5s infinite; }
+  .nav-btn.active-btn:active { transform: rotate(-1deg) translate(6px, 6px); box-shadow: 4px 4px 0px black; }
+  @keyframes comic-pulse { 0% { transform: rotate(-1deg) scale(1); } 50% { transform: rotate(-1deg) scale(1.02); } 100% { transform: rotate(-1deg) scale(1); } }
+
+  .text-flow-container { font-size: 1.4em; line-height: 2.3; text-align: justify; color: #000; }
+  .inline-select { display: inline-block; border: 2px solid black; padding: 2px 10px; margin: 2px; font-weight: bold; background: white; cursor: pointer; box-shadow: 3px 3px 0px black; transform: rotate(-1deg); font-family: 'Roboto Condensed', sans-serif; }
+  .selection-box { border: 3px solid black; background: white; font-weight: 900; font-size: 1.5em; box-shadow: 6px 6px 0px black; padding: 15px 25px; cursor: pointer; display: inline-flex; margin: 10px; min-width: 80px; justify-content: center; }
+
+  .comic-selected { background: #ff0055 !important; color: white !important; transform: scale(1.1) rotate(2deg) !important; box-shadow: 4px 4px 0px black !important; position: relative; }
+  .comic-selected::after { content: "POW!"; position: absolute; top: -25px; right: -20px; background: #ffeb3b; color: black; font-family: 'Bangers'; font-size: 0.9em; padding: 3px 10px; border: 3px solid black; border-radius: 50%; box-shadow: 2px 2px 0 black; }
+  
+  .comic-sworn { background: #ff9800 !important; color: white !important; transform: scale(1.15) rotate(-3deg) !important; box-shadow: 4px 4px 0px black !important; position: relative; }
+  .comic-sworn::after { content: "SCHWÖR!"; position: absolute; top: -25px; right: -30px; background: #ff0055; color: white; font-family: 'Bangers'; font-size: 0.9em; padding: 3px 10px; border: 3px solid black; border-radius: 50%; box-shadow: 2px 2px 0 black; }
+
+  .joker-right { background: #2ecc71 !important; color: white !important; transform: scale(1.1) rotate(2deg) !important; box-shadow: 4px 4px 0px black !important; position: relative; }
+  .joker-right::after { content: "YES!"; position: absolute; top: -25px; right: -20px; background: #2ecc71; color: white; font-family: 'Bangers'; font-size: 0.9em; padding: 3px 10px; border: 3px solid black; border-radius: 50%; box-shadow: 2px 2px 0 black; }
+  .joker-wrong { background: #e74c3c !important; color: white !important; text-decoration: line-through !important; opacity: 0.6 !important; pointer-events: none; }
+  .comic-destroyed { opacity: 0.5; text-decoration: line-through; background: #ddd !important; box-shadow: none !important; color: #777 !important; }
+
+  input[type=range] { -webkit-appearance: none; width: 100%; background: transparent; margin: 0 10px; }
+  input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 20px; background: #000; border: 3px solid black; }
+  input[type=range]::-webkit-slider-thumb {
+    height: 70px; width: 50px; -webkit-appearance: none; margin-top: -20px;
+    background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 60"><rect x="15" y="20" width="10" height="40" fill="%23d2b48c" stroke="black" stroke-width="2"/><ellipse cx="20" cy="15" rx="8" ry="12" fill="%23d32f2f" stroke="black" stroke-width="2"/><path d="M20 5 Q25 15 20 25 Q15 15 20 5" fill="%23ffeb3b" stroke="%23ff9800"/></svg>');
+    background-repeat: no-repeat; background-position: center; cursor: pointer; filter: drop-shadow(4px 4px 0px black); transform: rotate(15deg); 
+  }
+  .slider-wrapper { display: flex; align-items: center; justify-content: center; margin: 20px 0; }
+  .slider-label { font-family: 'Roboto Condensed', sans-serif; font-weight: bold; font-size: 1.1em; color: #333; white-space: nowrap; }
+
+  .smiley-container { display: flex; justify-content: center; gap: 20px; margin: 30px 0; cursor: pointer; }
+  .smiley-wrapper { font-size: 4.5em; width: 100px; height: 100px; display: flex; align-items: center; justify-content: center; transition: 0.2s; position: relative; }
+  .smiley-wrapper.selected { transform: scale(1.4) rotate(-5deg); z-index: 10; filter: drop-shadow(5px 5px 0 black); }
+  .smiley-wrapper.selected::before { content: "💥"; position: absolute; z-index: -1; font-size: 1.6em; }
+  .smiley-wrapper.dimmed { opacity: 0.4; transform: scale(0.8); filter: grayscale(100%); }
+  .visual-feedback { font-size: 7em; text-align: center; height: 140px; line-height: 140px; text-shadow: 4px 4px 0 black; margin-bottom: 20px; }
+  .wf-row { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #eee; padding: 15px 0; }
+  .wf-text { font-family: 'Bangers', cursive; font-size: 1.6em; flex: 1; padding-right: 10px; color: #333; text-align: left; }
+  table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 1.2em; background: white; color: black; border: 4px solid black; }
+  th, td { border: 2px solid black; padding: 10px; text-align: left; }
+  th { background: #ffeb3b; font-family: 'Bangers'; letter-spacing: 1px; font-size: 1.4em; }
+</style>
+</head>
+<body class="mode-intro">
+
+<div id="timer-box">⏱️ 10:00</div>
+<div id="joker-container">
+  <div id="joker-box" onclick="toggleJoker()">⚡ ⚡ ⚡</div>
+  <div id="swear-box" onclick="toggleSwear()">🤞 1</div>
+</div>
+
+<div class="container">
+  
+  <div id="step-start" class="step active">
+    <div class="intro-title">Herzlich Willkommen<br>zum Wochenrückblick</div>
+    <div class="lower-third">
+      <div class="lower-third-content">
+        <select id="userSelect" class="name-select">
+          <option value="">-- WER BIST DU? --</option>
+        </select>
+      </div>
+    </div>
+    <button class="nav-btn active-btn" style="background: #ff00cc; color: white;" onclick="goToCheckin()">STARTEN</button>
+  </div>
+
+  <div id="step-checkin" class="step">
+    <div class="container-card">
+      <h2 class="big-text">WIE FÜHLST DU DICH?</h2>
+      <div id="visualFeedback" class="visual-feedback">🔥</div>
+      <div class="slider-wrapper">
+        <span class="slider-label">Mäh 😒</span>
+        <input type="range" min="1" max="100" value="50" oninput="updateMood(this.value)">
+        <span class="slider-label">WOW! 🤩</span>
+      </div>
+      <hr style="margin: 40px 0; border: 2px dashed black;">
+      <h2 class="big-text">WIEVIEL AHNUNG HASTE?</h2>
+      <div class="smiley-container" id="knowledgeContainer">
+        <div class="smiley-wrapper" onclick="rateKnowledge(1, this)">🤯</div>
+        <div class="smiley-wrapper" onclick="rateKnowledge(2, this)">😐</div>
+        <div class="smiley-wrapper" onclick="rateKnowledge(3, this)">🙂</div>
+        <div class="smiley-wrapper" onclick="rateKnowledge(4, this)">😎</div>
+      </div>
+      <button class="nav-btn" id="btn-ready" disabled onclick="triggerTransition()">BEREIT?</button>
+    </div>
+  </div>
+
+  <div id="dynamic-quiz-container"></div>
+
+  <div id="step-end" class="step">
+    <div class="container-card" style="text-align:center;">
+      <h2 class="big-text">FERTIG! AMTLICHES ERGEBNIS:</h2>
+      <div id="loading">Sende Daten zum Lehrer Dashboard... 🚀</div>
+      <div id="resultView" style="display:none">
+         <div id="gifContainer" style="margin-bottom:20px;"></div>
+         <h3 id="scoreDisplay" style="font-size: 3em; margin: 20px 0 10px 0; font-family:'Bangers'; transform: rotate(-2deg);"></h3>
+         
+         <div id="lockedDetails" style="margin-top: 30px; padding: 20px; border: 4px dashed #333; background: #eee;">
+            <h3 style="font-family: 'Bangers'; font-size: 2em; color: #333;">LÖSUNGEN GESPERRT 🔒</h3>
+            <p style="font-size: 1.2em; font-weight: bold;">Die genaue Auswertung gibt es erst, wenn alle fertig sind!</p>
+            <input type="password" id="teacherPin" placeholder="PIN" style="font-size: 1.5em; padding: 10px; width: 120px; text-align: center; border: 3px solid black; margin: 10px;">
+            <br>
+            <div id="pinError" style="color: red; font-weight: bold; display: none; margin-bottom: 10px;">Falsche PIN!</div>
+            <button class="nav-btn active-btn" style="width: auto; padding: 10px 30px; font-size: 1.5em; margin-top: 0;" onclick="unlockDetails()">ENTSPERREN</button>
+         </div>
+         <div id="tableContainer" style="overflow-x:auto; display:none; margin-top: 30px;"></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  // ==========================================
+  // WÖCHENTLICHE KONFIGURATION (HIER ERSETZEN)
+  // ==========================================
+  const QUIZ_CONFIG = {
+    themaID: "Woche_03_Politische_Partizipation", // Eindeutige ID für deine Langzeitstatistik
+    googleForm: {
+      url: "https://docs.google.com/forms/d/e/DEINE_FORMULAR_ID/formResponse", // Endung /formResponse beachten!
+      entryName: "entry.111111111",
+      entryThema: "entry.222222222",
+      entryErgebnis: "entry.333333333",
+      entryDetails: "entry.444444444"
+    },
+    kapitel: [
+      {
+        id: "k1",
+        titel: "Streit und ein Kompromiss",
+        beschreibung: "Auch in dieser Woche gab es wieder Streit in der Koalition. Allerdings wurde auch eine wichtige Einigung erzielt.",
+        typ: "lueckentext",
+        // Format für Lücken: [KorrekteAntwort|FalschOption1|FalschOption2]
+        text: "Erneut gab es Streit zwischen der SPD und der Union. Auslöser war ein Vorstoß von SPD-Fraktionschef Matthias [Miersch|Claudius|Sammer]. Kanzler Friedrich Merz erklärte: Wir haben [Schulden|allmählich|Probleme] genug."
+      },
+      {
+        id: "k2",
+        titel: "Inland (Fakt oder Fake?)",
+        beschreibung: "Deutschland im Fokus: Welche Schlagzeilen sind Fakt (W), welche Fake (F)?",
+        typ: "wahr_falsch",
+        fragen: [
+          { fid: "wf1", text: "Deutscher Strom ist jetzt erstmals weltweit am günstigsten.", loesung: "F" },
+          { fid: "wf2", text: "Bundestag beschließt Solarpflicht für Neubauten.", loesung: "W" }
+        ]
+      },
+      {
+        id: "k3",
+        titel: "Bonus: Offene Frage",
+        beschreibung: "Zeit, dein Wissen aus dem Unterricht in eigenen Worten zu zeigen!",
+        typ: "freitext",
+        frage: "Definiere kurz den Begriff 'soziale Ungleichheit':"
+      }
+    ]
+  };
+
+  // Feste Schülerliste
+  const schuelerListe = ["Karl", "Ann-Kathrin", "Josi F.", "Marlene", "Mathilda", "Emilia", "Niklas", "Franka", "Afra", "Bastian", "Selma", "Anton", "Hilde", "Lara", "Victoria", "Wolke", "Josi R.", "Nico", "Cedric", "Luis", "Domenico", "Xenia", "Arjen", "Lena", "Stina"];
+  const routeGroup2 = ["Victoria", "Josi R.", "Josi F.", "Nico", "Cedric", "Luis", "Niklas", "Emilia", "Xenia", "Wolke"];
+
+  // Systemvariablen
+  let spielerName = "";
+  let gegebeneAntworten = {}; 
+  let loesungenSchluessel = {}; 
+  let jokerStatus = {}; 
+  let currentKapitelIndex = 0;
+  let geplanteRoute = [];
+
+  let jokersLeft = 3, jokerActive = false, swearJokersLeft = 1, swearActive = false;
+  let moodRating = 50, knowledgeRating = 0, focusTime = 0, blurStart = null;
+  let timeRemaining = 600, timerInterval = null;
+
+  // Initialisiere Namensauswahl
+  const sel = document.getElementById('userSelect');
+  schuelerListe.sort().forEach(n => { let o = document.createElement('option'); o.text = n; o.value = n; sel.add(o); });
+
+  function goToCheckin() {
+    spielerName = document.getElementById('userSelect').value;
+    if(!spielerName) return;
+
+    // Erstelle die Kapitel-Reihenfolge (Sitznachbar-Schutz)
+    let indizes = QUIZ_CONFIG.kapitel.map((_, i) => i);
+    if(routeGroup2.includes(spielerName)) {
+        geplanteRoute = indizes.reverse(); // Gruppe B kriegt die Kapitel rückwärts
+    } else {
+        geplanteRoute = indizes;
+    }
+
+    buildQuizUI();
+    document.body.classList.remove('mode-intro');
+    showStep('step-checkin');
+  }
+
+  // Baut das HTML dynamisch basierend auf QUIZ_CONFIG auf
+  function buildQuizUI() {
+    const container = document.getElementById('dynamic-quiz-container');
+    container.innerHTML = "";
+
+    geplanteRoute.forEach((kId, index) => {
+      const kap = QUIZ_CONFIG.kapitel[kId];
+      
+      // 1. Kapitelseite (Intro)
+      const introDiv = document.createElement('div');
+      introDiv.id = `step-intro-${kap.id}`;
+      introDiv.className = "step";
+      introDiv.innerHTML = `
+        <div class="container-card" style="text-align:center;">
+          <h2 class="big-text">${kap.titel}</h2>
+          <p style="font-size:1.6em; line-height:1.5; font-weight:bold; margin: 30px 0;">${kap.beschreibung}</p>
+          <button class="nav-btn active-btn" onclick="showStep('step-work-${kap.id}')">LOS GEHT'S!</button>
+        </div>`;
+      container.appendChild(introDiv);
+
+      // 2. Arbeitsseite (Fragen)
+      const workDiv = document.createElement('div');
+      workDiv.id = `step-work-${kap.id}`;
+      workDiv.className = "step";
+      
+      let innerHTML = `<div class="container-card"><h2 class="big-text">${kap.titel}</h2>`;
+
+      if(kap.typ === "lueckentext") {
+        innerHTML += `<div class="text-flow-container">`;
+        let parts = kap.text.split(/(\[[^\]]+\])/);
+        let lueckenCounter = 0;
+        
+        parts.forEach(part => {
+          if(part.startsWith('[') && part.endsWith(']')) {
+            lueckenCounter++;
+            let options = part.slice(1, -1).split('|');
+            let korrekt = options[0]; 
+            let feldId = `${kap.id}_L${lueckenCounter}`;
+            loesungenSchluessel[feldId] = korrekt;
+
+            // Optionen mischen für die Schüler
+            options.sort(() => Math.random() - 0.5);
+
+            innerHTML += `<span class="inline-group" data-feld="${feldId}">`;
+            options.forEach(opt => {
+              innerHTML += `<span class="inline-select" onclick="handleTap(this, '${feldId}', '${opt}')">${opt}</span>`;
+            });
+            innerHTML += `</span>`;
+          } else {
+            innerHTML += part;
+          }
+        });
+        innerHTML += `</div>`;
+      } 
+      else if(kap.typ === "wahr_falsch") {
+        kap.fragen.forEach(q => {
+          loesungenSchluessel[q.fid] = q.loesung;
+          innerHTML += `
+            <div class="wf-row">
+              <span class="wf-text">${q.text}</span>
+              <div class="inline-group" data-feld="${q.fid}">
+                <div class="selection-box" onclick="handleTap(this, '${q.fid}', 'W')">W</div>
+                <div class="selection-box" onclick="handleTap(this, '${q.fid}', 'F')">F</div>
+              </div>
+            </div>`;
+        });
+      }
+      else if(kap.typ === "freitext") {
+        let feldId = `${kap.id}_frei`;
+        innerHTML += `
+          <div style="text-align: left; margin-bottom: 20px;">
+            <span class="wf-text" style="display:block; margin-bottom: 10px;">${kap.frage}</span>
+            <textarea id="${feldId}" rows="5" style="width: 100%; padding: 15px; font-size: 1.2em; font-family: 'Roboto', sans-serif; border: 4px solid black; box-shadow: 4px 4px 0 black; resize: none;" placeholder="Schreibe deine Antwort hier hinein..." oninput="validateCurrentStep()"></textarea>
+          </div>`;
+      }
+
+      let istLetzter = (index === geplanteRoute.length - 1);
+      innerHTML += `<button class="nav-btn" id="btn-next-${kap.id}" disabled onclick="navigateQuiz()">${istLetzter ? 'QUIZ BEENDEN!' : 'WEITER!'}</button></div>`;
+      workDiv.innerHTML = innerHTML;
+      container.appendChild(workDiv);
+    });
+  }
+
+  function handleTap(el, feldId, wert) {
+    if (el.classList.contains('joker-wrong') || el.classList.contains('joker-right') || el.classList.contains('comic-sworn')) return;
+    const group = el.parentElement;
+
+    // JOKER-LOGIK (Nur für geschlossene Fragen aktiv)
+    if (swearActive) {
+        if (jokerStatus[feldId] === "blitz") return;
+        swearJokersLeft--;
+        jokerStatus[feldId] = "schwoer";
+        Array.from(group.children).forEach(c => { c.className = "comic-destroyed"; });
+        el.className = "comic-sworn";
+        gegebeneAntworten[feldId] = wert;
+        updateSwearUI();
+        validateCurrentStep();
+        return;
+    }
+
+    if (jokerActive) {
+        if (jokerStatus[feldId] === "schwoer") return;
+        jokersLeft--;
+        jokerStatus[feldId] = "blitz";
+        if (wert === loesungenSchluessel[feldId]) {
+            el.className = "joker-right comic-selected";
+            Array.from(group.children).forEach(c => { if(c !== el) c.className = 'comic-destroyed'; });
+            gegebeneAntworten[feldId] = wert;
+        } else {
+            el.className = "joker-wrong";
+        }
+        updateJokerUI();
+        validateCurrentStep();
+        return;
+    }
+
+    // NORMALER KLICK
+    Array.from(group.children).forEach(c => { 
+        if (!c.classList.contains('joker-wrong') && !c.classList.contains('joker-right') && !c.classList.contains('comic-sworn')) {
+            c.className = "inline-select selection-box"; 
+        }
+    });
+    el.classList.add('comic-selected');
+    Array.from(group.children).forEach(c => { 
+        if(c !== el && !["joker-wrong","joker-right","comic-sworn"].some(cls => c.classList.contains(cls))) {
+            c.classList.add('comic-destroyed'); 
+        }
+    });
+
+    gegebeneAntworten[feldId] = wert;
+    validateCurrentStep();
+  }
+
+  function validateCurrentStep() {
+    const kId = QUIZ_CONFIG.kapitel[geplanteRoute[currentKapitelIndex]].id;
+    const kap = QUIZ_CONFIG.kapitel[geplanteRoute[currentKapitelIndex]];
+    const btn = document.getElementById(`btn-next-${kId}`);
+    let valid = true;
+
+    if(kap.typ === "freitext") {
+        let val = document.getElementById(`${kap.id}_frei`).value.trim();
+        valid = (val !== "");
+        gegebeneAntworten[`${kap.id}_frei`] = val;
+    } else {
+        const groups = document.getElementById(`step-work-${kId}`).querySelectorAll('.inline-group');
+        groups.forEach(g => {
+            if(!gegebeneAntworten[g.dataset.feld]) valid = false;
+        });
+    }
+
+    if(valid) { btn.disabled = false; btn.classList.add('active-btn'); }
+    else { btn.disabled = true; btn.classList.remove('active-btn'); }
+  }
+
+  function navigateQuiz() {
+    currentKapitelIndex++;
+    if(currentKapitelIndex < geplanteRoute.length) {
+        let naechstesKap = QUIZ_CONFIG.kapitel[geplanteRoute[currentKapitelIndex]];
+        showStep(`step-intro-${naechstesKap.id}`);
+        window.scrollTo(0,0);
+    } else {
+        processAndSubmitResults();
+    }
+  }
+
+  // Berechnet Punkte lokal und funkt alles gesammelt an Google
+  function processAndSubmitResults() {
+    if (timerInterval) clearInterval(timerInterval);
+    document.getElementById('timer-box').style.display = 'none';
+    document.getElementById('joker-container').style.display = 'none';
+
+    let maxPunkte = 0;
+    let erreichtePunkte = 0;
+    let detailBericht = "";
+
+    // Auswertung geschlossene Fragen
+    for(let feldId in loesungenSchluessel) {
+        maxPunkte++;
+        let correct = loesungenSchluessel[feldId];
+        let studentAns = gegebeneAntworten[feldId] || "-";
+        
+        if(studentAns === correct) {
+            let punkteFuerLuecke = (jokerStatus[feldId] === "schwoer") ? 2 : 1;
+            erreichtePunkte += punkteFuerLuecke;
+            detailBericht += `${feldId}: Richtig (${studentAns}) [${punkteFuerLuecke}P]\n`;
+        } else {
+            let punkteFuerLuecke = (jokerStatus[feldId] === "schwoer") ? -1 : 0;
+            erreichtePunkte += punkteFuerLuecke;
+            detailBericht += `${feldId}: Falsch (Gewählt: ${studentAns}, Richtig: ${correct}) [${punkteFuerLuecke}P]\n`;
+        }
+    }
+
+    // Freitexte an Bericht anhängen
+    QUIZ_CONFIG.kapitel.forEach(kap => {
+        if(kap.typ === "freitext") {
+            let ans = gegebeneAntworten[`${kap.id}_frei`] || "-";
+            detailBericht += `--- FREITEXT (${kap.titel}) ---\n${ans}\n`;
+        }
+    });
+
+    // Metadaten anhängen
+    detailBericht += `\n--- METADATEN ---\nStimmung: ${moodRating}/100\nSelbsteinschätzung: ${knowledgeRating}/4\nAblenkungszeit: ${focusTime} Sek.`;
+
+    let note = erreichtePunkte >= (maxPunkte*0.9) ? 1 : erreichtePunkte >= (maxPunkte*0.75) ? 2 : erreichtePunkte >= (maxPunkte*0.6) ? 3 : erreichtePunkte >= (maxPunkte*0.4) ? 4 : erreichtePunkte >= (maxPunkte*0.2) ? 5 : 6;
+
+    // UI-Anzeige für Schüler bauen
+    document.getElementById('scoreDisplay').innerHTML = `Note: ${note} (${erreichtePunkte}/${maxPunkte} Punkten im geschlossenen Teil)`;
+    document.getElementById('gifContainer').innerHTML = `<img src="https://media.giphy.com/media/l0MYt5jPR6QX5pnqM/giphy.gif" style="max-width:100%; border:5px solid black;">`;
+    
+    showStep('step-end');
+
+    // === PARSING AN GOOGLE FORMS ===
+    const formData = new FormData();
+    formData.append(QUIZ_CONFIG.googleForm.entryName, spielerName);
+    formData.append(QUIZ_CONFIG.googleForm.entryThema, QUIZ_CONFIG.themaID);
+    formData.append(QUIZ_CONFIG.googleForm.entryErgebnis, `Punkte: ${erreichtePunkte}/${maxPunkte} -> Note: ${note}`);
+    formData.append(QUIZ_CONFIG.googleForm.entryDetails, detailBericht);
+
+    fetch(QUIZ_CONFIG.googleForm.url, {
+        method: "POST",
+        mode: "no-cors",
+        body: formData
+    }).then(() => {
+        document.getElementById('loading').style.display = 'none'; 
+        document.getElementById('resultView').style.display = 'block'; 
+    }).catch(err => {
+        console.error(err);
+        document.getElementById('loading').style.display = 'none'; 
+        document.getElementById('resultView').style.display = 'block'; 
+    });
+  }
+
+  // --- HILFSFUNKTIONEN (TIMER, JOKER, BASE-UI) ---
+  function updateMood(v) { moodRating = v; const vis = document.getElementById('visualFeedback'); let s = 0.5 + (v/100)*2; vis.style.transform = `scale(${s})`; vis.innerText = v < 20 ? "🕯️" : (v > 80 ? "🔥🔥" : "🔥"); }
+  function rateKnowledge(n, el) { knowledgeRating = n; Array.from(document.getElementById('knowledgeContainer').children).forEach(c => { c.className = 'smiley-wrapper dimmed'; }); el.className = 'smiley-wrapper selected'; const btn = document.getElementById('btn-ready'); btn.disabled = false; btn.classList.add('active-btn'); }
+  function triggerTransition() { showStep('step-end'); document.getElementById('loading').innerText = "Bereite Unterlagen vor... ⚡"; setTimeout(() => { showStep(`step-intro-${QUIZ_CONFIG.kapitel[geplanteRoute[0]].id}`); startTimer(); }, 1200); }
+  function startTimer() { document.getElementById('timer-box').style.display = 'block'; document.getElementById('joker-container').style.display = 'flex'; timerInterval = setInterval(() => { timeRemaining--; let m = Math.floor(timeRemaining / 60); let s = timeRemaining % 60; document.getElementById('timer-box').innerText = `⏱️ ${m}:${s < 10 ? '0' : ''}${s}`; if (timeRemaining <= 60) document.getElementById('timer-box').classList.add('timer-warning'); if (timeRemaining <= 0) { clearInterval(timerInterval); processAndSubmitResults(); } }, 1000); }
+  function toggleJoker() { if (jokersLeft > 0) { if (swearActive) toggleSwear(); jokerActive = !jokerActive; document.getElementById('joker-box').className = jokerActive ? 'joker-active-pulse' : ''; } }
+  function toggleSwear() { if (swearJokersLeft > 0) { if (jokerActive) toggleJoker(); swearActive = !swearActive; document.getElementById('swear-box').className = swearActive ? 'swear-active-pulse' : ''; } }
+  function updateJokerUI() { let h = ''; for (let i=0; i<3; i++) h += i < jokersLeft ? '⚡ ' : '<span style="opacity:0.3">⚡ </span>'; document.getElementById('joker-box').innerHTML = h; jokerActive = false; }
+  function updateSwearUI() { document.getElementById('swear-box').innerHTML = swearJokersLeft === 0 ? '<span style="opacity:0.3">🤞 </span>' : '🤞 '; swearActive = false; }
+  function showStep(id) { document.querySelectorAll('.step').forEach(s => s.classList.remove('active')); const el = document.getElementById(id); if(el) el.classList.add('active'); }
+  function unlockDetails() { if (document.getElementById('teacherPin').value === "1234") { document.getElementById('lockedDetails').style.display = 'none'; document.getElementById('tableContainer').style.display = 'block'; } else { document.getElementById('pinError').style.display = 'block'; } }
+  window.onblur = () => blurStart = Date.now();
+  window.onfocus = () => { if(blurStart) { focusTime += Math.round((Date.now()-blurStart)/1000); blurStart=null; }};
+</script>
+</body>
+</html>
