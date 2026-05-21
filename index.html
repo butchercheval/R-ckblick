@@ -465,7 +465,8 @@
         });
     });
 
-    let note = erreichtePunkte >= (maxPunkte*0.9) ? 1 : erreichtePunkte >= (maxPunkte*0.75) ? 2 : erreichtePunkte >= (maxPunkte*0.6) ? 3 : erreichtePunkte >= (maxPunkte*0.4) ? 4 : erreichtePunkte >= (maxPunkte*0.2) ? 5 : 6;
+    // NEU: Angepasster Notenschlüssel (95% -> 1, 80% -> 2, 60% -> 3, 40% -> 4, 20% -> 5, <20% -> 6)
+    let note = erreichtePunkte >= (maxPunkte*0.95) ? 1 : erreichtePunkte >= (maxPunkte*0.80) ? 2 : erreichtePunkte >= (maxPunkte*0.60) ? 3 : erreichtePunkte >= (maxPunkte*0.40) ? 4 : erreichtePunkte >= (maxPunkte*0.20) ? 5 : 6;
 
     document.getElementById('scoreDisplay').innerText = `Note: ${note} (${erreichtePunkte}/${maxPunkte} Punkte)`;
     showStep('step-end');
